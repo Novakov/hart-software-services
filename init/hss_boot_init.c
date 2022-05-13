@@ -67,7 +67,7 @@
 // local module functions
 
 #if IS_ENABLED(CONFIG_SERVICE_BOOT)
-#  if !IS_ENABLED(CONFIG_SERVICE_BOOT_USE_PAYLOAD)
+#if IS_ENABLED(CONFIG_SERVICE_MMC) || IS_ENABLED(CONFIG_SERVICE_QSPI) || IS_ENABLED(CONFIG_SERVICE_SPI)
 typedef bool (*HSS_BootImageCopyFnPtr_t)(void *pDest, size_t srcOffset, size_t byteCount);
 static bool copyBootImageToDDR_(struct HSS_BootImage *pBootImage, char *pDest,
     size_t srcOffset, HSS_BootImageCopyFnPtr_t pCopyFunction);
@@ -81,6 +81,7 @@ static bool getBootImageFromQSPI_(struct HSS_Storage *pStorage, struct HSS_BootI
 static bool getBootImageFromMMC_(struct HSS_Storage *pStorage, struct HSS_BootImage **ppBootImage);
 static bool getBootImageFromSpiFlash_(struct HSS_Storage *pStorage, struct HSS_BootImage **ppBootImage);
 static bool getBootImageFromPayload_(struct HSS_Storage *pStorage, struct HSS_BootImage **ppBootImage);
+static bool getBootImageFromJtag_(struct HSS_Storage *pStorage, struct HSS_BootImage **ppBootImage);
 
 
 //
@@ -130,6 +131,17 @@ static struct HSS_Storage payloadStorage_ = {
     .flushWriteBuffer = NULL
 };
 #endif
+#if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
+static struct HSS_Storage jtagPayloadStorage_ = {
+    .name = "JTAG",
+    .getBootImage = getBootImageFromJtag_,
+    .init = NULL,
+    .readBlock = NULL,
+    .writeBlock = NULL,
+    .getInfo = NULL,
+    .flushWriteBuffer = NULL
+};
+#endif
 
 static struct HSS_Storage *pStorages[] =
 {
@@ -145,6 +157,9 @@ static struct HSS_Storage *pStorages[] =
 #if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_PAYLOAD)
 	&payloadStorage_,
 #endif
+#if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
+    &jtagPayloadStorage_,
+#endif
 };
 
 static struct HSS_Storage *pDefaultStorage = NULL;
@@ -152,6 +167,8 @@ static struct HSS_Storage *pDefaultStorage = NULL;
 #if IS_ENABLED(CONFIG_SERVICE_MMC) || IS_ENABLED(CONFIG_SERVICE_QSPI) || (IS_ENABLED(CONFIG_SERVICE_SPI) && (SPI_FLASH_BOOT_ENABLED))
 struct HSS_BootImage bootImage __attribute__((aligned(8)));
 #elif IS_ENABLED(CONFIG_SERVICE_BOOT_USE_PAYLOAD)
+//
+#elif IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
 //
 #else
 #    error Unable to determine boot mechanism
@@ -187,7 +204,11 @@ bool HSS_BootInit(void)
     HSS_PerfCtr_Allocate(&perf_ctr_index, "Boot Image Init");
 
     if (pDefaultStorage) {
-        result = pDefaultStorage->init();
+        if(pDefaultStorage->init != NULL) {
+            result = pDefaultStorage->init();
+        } else {
+            result = true;
+        }
         if (result) {
             result = tryBootFunction_(pDefaultStorage, pDefaultStorage->getBootImage);
         }
@@ -277,7 +298,7 @@ static void printBootImageDetails_(struct HSS_BootImage const * const pBootImage
 }
 #endif
 
-#if IS_ENABLED(CONFIG_SERVICE_BOOT) && !IS_ENABLED(CONFIG_SERVICE_BOOT_USE_PAYLOAD)
+#if IS_ENABLED(CONFIG_SERVICE_BOOT) && (IS_ENABLED(CONFIG_SERVICE_MMC) || IS_ENABLED(CONFIG_SERVICE_QSPI) || IS_ENABLED(CONFIG_SERVICE_SPI))
 static bool copyBootImageToDDR_(struct HSS_BootImage *pBootImage, char *pDest,
     size_t srcOffset, HSS_BootImageCopyFnPtr_t pCopyFunction)
 {
@@ -494,6 +515,27 @@ static bool getBootImageFromPayload_(struct HSS_Storage *pStorage, struct HSS_Bo
     return result;
 }
 
+static bool getBootImageFromJtag_(struct HSS_Storage *pStorage, struct HSS_BootImage **ppBootImage)
+{
+    bool result = false;
+    (void)pStorage;
+
+#if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
+    assert(ppBootImage);
+
+    mHSS_DEBUG_PRINTF(LOG_NORMAL, "Hart will now halt and wait to be resumed by debugger. Load payload image under address 0x%012llX\n", CONFIG_SERVICE_BOOT_DDR_TARGET_ADDR);
+    asm volatile("ebreak\nnop\n");
+    mHSS_DEBUG_PRINTF(LOG_NORMAL, "Hart resumed. Assuming payload image is available\n");
+
+    *ppBootImage = (struct HSS_BootImage *)(CONFIG_SERVICE_BOOT_DDR_TARGET_ADDR);
+
+    result = HSS_Boot_VerifyMagic(*ppBootImage);
+    printBootImageDetails_(*ppBootImage);
+#endif
+
+    return result;
+}
+
 void HSS_BootSelectPayload(void)
 {
 #if IS_ENABLED(CONFIG_SERVICE_USE_PAYLOAD)
@@ -501,6 +543,16 @@ void HSS_BootSelectPayload(void)
     pDefaultStorage = &payloadStorage_;
 #else
     (void)getBootImageFromPayload_;
+#endif
+}
+
+void HSS_BootSelectJTAG(void)
+{
+#if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
+    mHSS_DEBUG_PRINTF(LOG_NORMAL, "Selecting JTAG as boot source ...\n");
+    pDefaultStorage = &jtagPayloadStorage_;
+#else
+    (void)getBootImageFromJtag_;
 #endif
 }
 

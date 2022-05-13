@@ -20,7 +20,7 @@ config SERVICE_BOOT_SPI_FLASH_OFFSET
 config SERVICE_BOOT_USE_PAYLOAD
         bool "Use Payload file"
         default  n
-        depends on SERVICE_BOOT 
+        depends on SERVICE_BOOT
         help
                 This feature enables booting a directly contained payload.
 
@@ -47,5 +47,15 @@ config SERVICE_BOOT_MMC_USE_GPT
 		If CONFIG_SERVICE_MMC is enabled, then for MMC boots this option enables 
                 parsing of a GUID Partition Table (GPT) in search of the boot image starting
                 sector..
+
+config SERVICE_BOOT_USE_JTAG
+        bool "Boot-over-JTAG support"
+        default n
+        depends on SERVICE_BOOT
+        help
+                This feature enables support for booting from payload loaded using JTAG.
+
+                If you do not know what to do here, say N.
+
 
 endmenu

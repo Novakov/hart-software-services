@@ -41,6 +41,7 @@ void HSS_BootSelectEMMC(void);
 void HSS_BootSelectSDCARD(void);
 void HSS_BootSelectPayload(void);
 void HSS_BootSelectSPI(void);
+void HSS_BootSelectJTAG(void);
 
 void HSS_BootListStorageProviders(void);
 #ifdef __cplusplus

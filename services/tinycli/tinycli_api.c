@@ -148,6 +148,7 @@ static void tinyCLI_IPIDumpStats_(void);
 static void tinyCLI_Quit_(void);
 static void tinyCLI_EMMC_(void);
 static void tinyCLI_MMC_(void);
+static void tinyCLI_JTAG_(void);
 static void tinyCLI_SDCARD_(void);
 static void tinyCLI_Payload_(void);
 static void tinyCLI_SPI_(void);
@@ -188,6 +189,9 @@ enum CmdId {
     CMD_MMC,
     CMD_PAYLOAD,
     CMD_SPI,
+#if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
+    CMD_PAYLOAD_JTAG,
+#endif
     CMD_USBDMSC,
     CMD_SCRUB,
     CMD_INVALID,
@@ -286,6 +290,9 @@ static const struct tinycli_cmd toplevelCmds[] = {
     { CMD_QSPI,    "QSPI",    "Select boot via QSPI.", tinyCLI_QSPI_ },
     { CMD_EMMC,    "EMMC",    "Select boot via eMMC.", tinyCLI_EMMC_ },
     { CMD_MMC,     "MMC",     "Select boot via SDCARD/eMMC.", tinyCLI_MMC_ },
+#if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
+    { CMD_PAYLOAD_JTAG, "JTAG", "Select boot via JTAG", tinyCLI_JTAG_ },
+#endif
     { CMD_SDCARD,  "SDCARD",  "Select boot via SDCARD.", tinyCLI_SDCARD_ },
     { CMD_PAYLOAD, "PAYLOAD", "Select boot via payload.", tinyCLI_Payload_ },
     { CMD_SPI,     "SPI",     "Select boot via SPI.", tinyCLI_SPI_ },
@@ -314,6 +321,9 @@ static const struct tinycli_toplevel_cmd_safe toplevelCmdsSafeAfterBootFlags[] =
     { CMD_QSPI,    true },
     { CMD_EMMC,    true },
     { CMD_MMC,     true },
+#if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
+    { CMD_PAYLOAD_JTAG, true },
+#endif
     { CMD_SDCARD,  true },
     { CMD_PAYLOAD, true },
     { CMD_SPI,     true },
@@ -886,6 +896,15 @@ static void tinyCLI_MMC_(void)
     HSS_BootSelectMMC();
 #else
     tinyCLI_UnsupportedBootMechanism_("eMMC/SDCard");
+#endif
+}
+
+static void tinyCLI_JTAG_(void)
+{
+#if IS_ENABLED(CONFIG_SERVICE_BOOT_USE_JTAG)
+    HSS_BootSelectJTAG();
+#else
+    tinyCLI_UnsupportedBootMechanism_("JTAG");
 #endif
 }
 
