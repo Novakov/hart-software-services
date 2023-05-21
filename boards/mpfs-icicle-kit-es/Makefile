@@ -36,7 +36,7 @@ TARGET-jtag_trampoline=hss-jtag_trampoline.elf
 RISCV_TARGET=$(TARGET-l2scratch) $(TARGET-envm-wrapper) $(TARGET-jtag_trampoline)
 TARGET:=$(RISCV_TARGET)
 
-LINKER_SCRIPT-l2scratch=boards/${BOARD}/hss-l2scratch.ld
+LINKER_SCRIPT-l2scratch=boards/$(BOARD)/hss-l2scratch.ld
 
 BOARD_DIR=boards/mpfs-icicle-kit-es
 

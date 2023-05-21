@@ -41,20 +41,20 @@ include application/os.mk
 include application/Makefile
 include .config
 
-ifneq ("$(wildcard boards/${BOARD}/Makefile)","")
-  include boards/${BOARD}/Makefile
+ifneq ("$(wildcard boards/$(BOARD)/Makefile)","")
+  include boards/$(BOARD)/Makefile
 else
   ifndef BOARD
     BOARD:=mpfs-icicle-kit-es
     export BOARD
-    $(info INFO: BOARD not specified, defaulting to ${BOARD}) # default to icicle if nothing found
-    include boards/${BOARD}/Makefile
+    $(info INFO: BOARD not specified, defaulting to $(BOARD)) # default to icicle if nothing found
+    include boards/$(BOARD)/Makefile
   else
-    $(error Board >>${BOARD}<< not found)
+    $(error Board >>$(BOARD)<< not found)
   endif
 endif
 
-CORE_CFLAGS+=-DBOARD=${BOARD}
+CORE_CFLAGS+=-DBOARD=$(BOARD)
 
 MCMODEL=-mcmodel=medany
 

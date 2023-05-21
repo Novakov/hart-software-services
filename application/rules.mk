@@ -59,7 +59,8 @@ CORE_CFLAGS+=$(MCMODEL) -mstrict-align
 CORE_CFLAGS+=-mabi=$(PLATFORM_RISCV_ABI) -march=$(PLATFORM_RISCV_ISA)
 
 # Debug options
-CORE_CFLAGS+=-g3 -DDEBUG -pipe -grecord-gcc-switches
+CORE_CFLAGS+=-g3 -DDEBUG
+#-grecord-gcc-switches
 #CORE_CFLAGS+=-pipe
 
 VENDOR_STRING=$(shell git describe --tags 2> /dev/null || echo "unknown")
@@ -80,7 +81,7 @@ CORE_CFLAGS+=-ffunction-sections -fdata-sections
 
 # Stack Usage
 ifdef CONFIG_CC_DUMP_STACKSIZE
-CORE_CFLAGS+=-fstack-usage
+# CORE_CFLAGS+=-fstack-usage
 endif
 
 #-ffreestanding
@@ -115,7 +116,7 @@ ifdef CONFIG_CC_STACKPROTECTOR_STRONG
   # CORE_CFLAGS+=-fstack-clash-protection  # currently does nothing on RISC-V
 else
   $(info INFO: NOTICE: enabling -flto (which means stack protection is disabled))
-  OPT-y+=-flto=auto -ffat-lto-objects -fcompare-debug -fno-stack-protector
+  OPT-y+=-flto=auto -ffat-lto-objects -fno-stack-protector
 endif
 
 ##############################################################################

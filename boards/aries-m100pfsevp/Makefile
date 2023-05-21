@@ -38,7 +38,7 @@ TARGET-envm-wrapper=hss-envm-wrapper.elf
 RISCV_TARGET=$(TARGET-l2scratch) $(TARGET-envm-wrapper)
 TARGET:=$(RISCV_TARGET)
 
-LINKER_SCRIPT-l2scratch=boards/${BOARD}/hss-l2scratch.ld
+LINKER_SCRIPT-l2scratch=boards/$(BOARD)/hss-l2scratch.ld
 
 PLATFORM_CFLAGS += -DCONFIG_MODULE_M100PFS=1 -DCONFIG_BOARD_M100PFSEVP=1
 BOARD_DIR=boards/aries-m100pfsevp

@@ -36,7 +36,7 @@ all: config.h $(TARGET)
 
 defconfig:
 	@$(ECHO) " CP       def_config";
-	cp boards/${BOARD}/def_config .config
+	cp boards/$(BOARD)/def_config .config
 	@$(ECHO) " GENCONFIG"
 	$(PYTHON) $(GENCONFIG)
 
@@ -57,20 +57,20 @@ guiconfig:
 # config, and the user can tweak if necessary
 .config:
 ifeq ($(HOST_WINDOWS), true)
-	$(info Using boards/${BOARD}/def_config - edit as necessary.)
+	$(info Using boards/$(BOARD)/def_config - edit as necessary.)
 	@$(ECHO) " CP       def_config";
-	cp boards/${BOARD}/def_config .config
+	cp boards/$(BOARD)/def_config .config
 	@$(ECHO) " GENCONFIG"
 	$(PYTHON) $(GENCONFIG)
 else
   ifeq ($(HOST_LINUX_DESKTOP), true)
 	@$(ECHO) " CP       def_config";
-	cp boards/${BOARD}/def_config .config
+	cp boards/$(BOARD)/def_config .config
 	@$(ECHO) " GUICONFIG"
 	$(PYTHON) $(GUICONFIG)
   else
 	@$(ECHO) " CP       def_config";
-	cp boards/${BOARD}/def_config .config
+	cp boards/$(BOARD)/def_config .config
 	@$(ECHO) " MENUCONFIG"
 	$(PYTHON) $(MENUCONFIG)
   endif

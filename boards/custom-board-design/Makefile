@@ -35,7 +35,7 @@ TARGET-envm-wrapper=hss-envm-wrapper.elf
 RISCV_TARGET=$(TARGET-l2scratch) $(TARGET-envm-wrapper)
 TARGET:=$(RISCV_TARGET)
 
-LINKER_SCRIPT-l2scratch=boards/${BOARD}/hss-l2scratch.ld
+LINKER_SCRIPT-l2scratch=boards/$(BOARD)/hss-l2scratch.ld
 
 BOARD_DIR=boards/custom-board-design
 

@@ -90,7 +90,7 @@ carray-sbi_ecall_exts-$(CONFIG_SBI_ECALL_VENDOR) += ecall_vendor
 
 services/opensbi/opensbi_ecall_exts.c: $(OPENSBI_SRC_DIR)/lib/sbi/sbi_ecall_exts.carray .config
 	echo " CARRAY    $<"
-	$(OPENSBI_SRC_DIR)/scripts/carray.sh -i $< -l "$(carray-sbi_ecall_exts-y)" > $@
+	sh $(OPENSBI_SRC_DIR)/scripts/carray.sh -i $< -l "$(carray-sbi_ecall_exts-y)" > $@
 
 ifdef CONFIG_USE_IHC
 SRCS-$(CONFIG_SERVICE_OPENSBI_IHC) += \
